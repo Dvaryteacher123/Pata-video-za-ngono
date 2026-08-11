@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="sw">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Admin - Weka Bei</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #0f172a;
+            color: #fff;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .card {
+            background: rgba(30, 41, 59, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 24px;
+            padding: 40px;
+            max-width: 400px;
+            width: 100%;
+            backdrop-filter: blur(10px);
+        }
+        .card h2 {
+            font-size: 24px;
+            font-weight: 800;
+            margin-bottom: 4px;
+            color: #38bdf8;
+        }
+        .card p {
+            color: #94a3b8;
+            font-size: 14px;
+            margin-bottom: 24px;
+        }
+        .form-group {
+            margin-bottom: 16px;
+        }
+        .form-group label {
+            display: block;
+            font-size: 12px;
+            font-weight: 600;
+            color: #94a3b8;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 4px;
+        }
+        .form-group input {
+            width: 100%;
+            padding: 12px 16px;
+            background: #1e293b;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 12px;
+            color: #fff;
+            font-size: 16px;
+            outline: none;
+            transition: 0.3s;
+            font-family: 'Inter', sans-serif;
+        }
+        .form-group input:focus {
+            border-color: #38bdf8;
+            box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.1);
+        }
+        .btn-save {
+            width: 100%;
+            padding: 14px;
+            background: #38bdf8;
+            border: none;
+            border-radius: 12px;
+            color: #0f172a;
+            font-weight: 700;
+            font-size: 16px;
+            cursor: pointer;
+            transition: 0.3s;
+            box-shadow: 0 4px 20px rgba(56, 189, 248, 0.2);
+        }
+        .btn-save:hover {
+            transform: scale(1.02);
+            box-shadow: 0 6px 30px rgba(56, 189, 248, 0.3);
+        }
+        .btn-save:active {
+            transform: scale(0.96);
+        }
+        .status {
+            margin-top: 12px;
+            padding: 10px;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 600;
+            display: none;
+        }
+        .status.success {
+            display: block;
+            background: rgba(16, 185, 129, 0.15);
+            color: #10b981;
+            border: 1px solid rgba(16, 185, 129, 0.2);
+        }
+        .status.error {
+            display: block;
+            background: rgba(239, 68, 68, 0.15);
+            color: #ef4444;
+            border: 1px solid rgba(239, 68, 68, 0.2);
+        }
+        .current-price {
+            background: rgba(255, 255, 255, 0.03);
+            padding: 12px 16px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            text-align: center;
+            font-size: 14px;
+            color: #94a3b8;
+        }
+        .current-price strong {
+            color: #fbbf24;
+            font-size: 20px;
+        }
+        .note {
+            font-size: 11px;
+            color: #475569;
+            margin-top: 12px;
+            text-align: center;
+            border-top: 1px solid rgba(255,255,255,0.04);
+            padding-top: 12px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="card">
+        <h2><i class="fas fa-cog" style="color:#38bdf8;"></i> Weka Bei</h2>
+        <p>Badilisha bei na link ya WhatsApp group.</p>
+
+        <div class="current-price" id="currentPriceDisplay">
+            Bei ya sasa: <strong id="currentPrice">TSh 5,000</strong>
+        </div>
+
+        <form id="adminForm">
+            <div class="form-group">
+                <label>Bei (TSh)</label>
+                <input type="number" id="priceInput" placeholder="5000" value="5000" />
+            </div>
+            <div class="form-group">
+                <label>WhatsApp Group Link</label>
+                <input type="text" id="linkInput" placeholder="https://chat.whatsapp.com/..." value="https://chat.whatsapp.com/YourGroupLinkHere" />
+            </div>
+            <button type="submit" class="btn-save">HIFADHI</button>
+        </form>
+
+        <div class="status" id="statusMsg"></div>
+
+        <div class="note">
+            <i class="fas fa-info-circle"></i> Baada ya kubadilisha, nenda kwenye index.html kuona mabadiliko
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getFirestore, collection, getDocs, doc, updateDoc, addDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        // ===== FIREBASE CONFIG =====
+        const firebaseConfig = {
+            apiKey: "AIzaSyCvQGF9i7EAcUz72-1EriDJzc7Mcxvq-r0",
+            authDomain: "pata-link-za-magroup-whatsapp.firebaseapp.com",
+            projectId: "pata-link-za-magroup-whatsapp",
+            storageBucket: "pata-link-za-magroup-whatsapp.firebasestorage.app",
+            messagingSenderId: "603411167221",
+            appId: "1:603411167221:web:67c1e724e1cc93299c92bc",
+            measurementId: "G-RZJ0E92YF7"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        let settingsDocId = null;
+
+        // ===== LOAD CURRENT SETTINGS =====
+        async function loadSettings() {
+            try {
+                const snapshot = await getDocs(collection(db, "settings"));
+                snapshot.forEach((doc) => {
+                    settingsDocId = doc.id;
+                    const data = doc.data();
+                    if (data.price) {
+                        document.getElementById('currentPrice').textContent = 'TSh ' + data.price.toLocaleString();
+                        document.getElementById('priceInput').value = data.price;
+                    }
+                    if (data.whatsappLink) {
+                        document.getElementById('linkInput').value = data.whatsappLink;
+                    }
+                });
+            } catch (e) {
+                console.error("Error loading settings:", e);
+            }
+        }
+        loadSettings();
+
+        // ===== SAVE SETTINGS =====
+        document.getElementById('adminForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const price = Number(document.getElementById('priceInput').value);
+            const whatsappLink = document.getElementById('linkInput').value.trim();
+            const status = document.getElementById('statusMsg');
+
+            status.className = 'status';
+
+            if (!price || price <= 0) {
+                status.textContent = '❌ Tafadhali weka bei sahihi.';
+                status.className = 'status error';
+                return;
+            }
+
+            try {
+                if (settingsDocId) {
+                    await updateDoc(doc(db, "settings", settingsDocId), {
+                        price: price,
+                        whatsappLink: whatsappLink || '',
+                        updatedAt: new Date().toISOString()
+                    });
+                } else {
+                    const newDoc = await addDoc(collection(db, "settings"), {
+                        price: price,
+                        whatsappLink: whatsappLink || '',
+                        createdAt: new Date().toISOString()
+                    });
+                    settingsDocId = newDoc.id;
+                }
+
+                status.textContent = '✅ Imehifadhiwa kwa mafanikio!';
+                status.className = 'status success';
+                document.getElementById('currentPrice').textContent = 'TSh ' + price.toLocaleString();
+
+                setTimeout(() => {
+                    status.className = 'status';
+                }, 3000);
+
+            } catch (err) {
+                status.textContent = '❌ Imeshindikana: ' + err.message;
+                status.className = 'status error';
+            }
+        });
+    </script>
+</body>
+</html>
