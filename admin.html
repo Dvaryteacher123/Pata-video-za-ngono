@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="sw">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel - Dhibiti Bei</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f7f6;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .admin-card {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 450px;
+        }
+        h2 { color: #333; text-align: center; margin-bottom: 20px; }
+        .form-group { margin-bottom: 20px; }
+        label { display: block; margin-bottom: 8px; font-weight: bold; color: #555; }
+        input[type="number"], textarea {
+            width: 100%;
+            padding: 12px;
+            box-sizing: border-box;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 16px;
+        }
+        textarea { resize: vertical; height: 80px; }
+        .btn-container { display: flex; gap: 10px; }
+        button {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .btn-save { background-color: #28a745; color: white; }
+        .btn-delete { background-color: #dc3545; color: white; }
+        .current-price-box {
+            margin-top: 20px;
+            padding: 12px;
+            background: #e9ecef;
+            border-radius: 6px;
+            text-align: center;
+            font-weight: bold;
+            color: #333;
+            font-size: 14px;
+        }
+        #message { margin-top: 15px; text-align: center; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+    <div class="admin-card">
+        <h2>Usimamizi wa Huduma</h2>
+        
+        <div class="form-group">
+            <label for="priceInput">Weka Bei Mpya (TZS):</label>
+            <input type="number" id="priceInput" placeholder="Mfano: 1000">
+        </div>
+
+        <div class="form-group">
+            <label for="descInput">Maelezo ya Huduma:</label>
+            <textarea id="descInput" placeholder="Andika maelezo yatakayoonekana kule index..."></textarea>
+        </div>
+
+        <div class="btn-container">
+            <button class="btn-save" onclick="saveData()">Hifadhi</button>
+            <button class="btn-delete" onclick="deleteData()">Futa Bei</button>
+        </div>
+
+        <!-- Sehemu ya kuona bei ya sasa kwa chini -->
+        <div class="current-price-box" id="currentPriceDisplay">
+            Inapakia bei ya sasa...
+        </div>
+
+        <p id="message"></p>
+    </div>
+
+    <script>
+        async function loadCurrentData() {
+            try {
+                const res = await fetch('/api/price');
+                const data = await res.json();
+                if (data.success && data.amount > 0) {
+                    document.getElementById('currentPriceDisplay').textContent = 
+                        `Bei ya sasa: TZS ${data.amount} | Maelezo: ${data.description || 'Hakuna'}`;
+                } else {
+                    document.getElementById('currentPriceDisplay').textContent = 'Hakuna bei iliyowekwa bado (Sifuri).';
+                }
+            } catch (e) {
+                document.getElementById('currentPriceDisplay').textContent = 'Imeshindwa kupakia bei ya sasa.';
+            }
+        }
+
+        async function saveData() {
+            const amount = document.getElementById('priceInput').value;
+            const description = document.getElementById('descInput').value;
+            const msg = document.getElementById('message');
+
+            if (!amount) {
+                msg.style.color = 'red';
+                msg.textContent = 'Tafadhali jaza kiasi cha bei!';
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/admin/price', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ amount: Number(amount), description })
+                });
+                const data = await response.json();
+
+                if (data.success) {
+                    msg.style.color = 'green';
+                    msg.textContent = 'Imehifadhiwa kikamilifu!';
+                    loadCurrentData();
+                } else {
+                    msg.style.color = 'red';
+                    msg.textContent = 'Imeshindwa kuhifadhi.';
+                }
+            } catch (error) {
+                msg.style.color = 'red';
+                msg.textContent = 'Hitilafu ya mtandao.';
+            }
+        }
+
+        async function deleteData() {
+            const msg = document.getElementById('message');
+            try {
+                const response = await fetch('/api/admin/price', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ amount: 0, description: '' })
+                });
+                const data = await response.json();
+
+                if (data.success) {
+                    document.getElementById('priceInput').value = '';
+                    document.getElementById('descInput').value = '';
+                    msg.style.color = 'green';
+                    msg.textContent = 'Bei imefutwa!';
+                    loadCurrentData();
+                }
+            } catch (error) {
+                msg.style.color = 'red';
+                msg.textContent = 'Imeshindwa kufuta.';
+            }
+        }
+
+        loadCurrentData();
+    </script>
+</body>
+</html>
