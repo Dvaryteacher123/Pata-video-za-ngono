@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin - Badilisha Bei</title>
+</head>
+<body>
+    <h1>Admin Panel</h1>
+    <form id="priceForm">
+        <label>Weka Bei Mpya (TZS):</label>
+        <input type="number" id="newPrice" required>
+        <button type="submit">Hifadhi Bei</button>
+    </form>
+    <script>
+        document.getElementById('priceForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const amount = document.getElementById('newPrice').value;
+            const res = await fetch('/api/admin/price', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ amount })
+            });
+            alert('Bei imehifadhiwa!');
+        });
+    </script>
+</body>
+</html>
+
