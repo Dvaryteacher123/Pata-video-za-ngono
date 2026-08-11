@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="sw">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pata Link - Malipo</title>
+    <style>
+        * { box-sizing: border-box; }
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            font-family: Arial, sans-serif;
+            background: #000;
+        }
+
+        /* Video inajaza kioo kizima kwa nyuma na inasubiri kuguswa */
+        #bgVideo {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            z-index: 1;
+            cursor: pointer;
+        }
+
+        /* Bango Jekundu la Malipo (Limefichwa mwanzo, litatokea mtu akigusa skrini au video ikiisha) */
+        .payment-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            display: none; /* Limefichwa hadi skrini iguswe */
+            justify-content: center;
+            align-items: center;
+            z-index: 10;
+        }
+
+        .payment-box {
+            background: #d9534f; /* Rangi nyekundu */
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.6);
+            width: 90%;
+            max-width: 400px;
+            color: white;
+            animation: fadeIn 0.5s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.9); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        .payment-box h2 { text-align: center; margin-top: 0; margin-bottom: 15px; }
+        
+        .price-tag {
+            font-size: 24px;
+            font-weight: bold;
+            text-align: center;
+            background: rgba(0,0,0,0.25);
+            padding: 10px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+        }
+
+        .description-box {
+            background: rgba(0,0,0,0.2);
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            font-size: 14px;
+            line-height: 1.4;
+        }
+
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; }
+        
+        input, select {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            outline: none;
+        }
+
+        .btn-pay {
+            background-color: #ffffff;
+            color: #d9534f;
+            border: none;
+            width: 100%;
+            padding: 12px;
+            border-radius: 6px;
+            font-size: 16px;
+            cursor: pointer;
+            font-weight: bold;
+            margin-top: 5px;
+        }
+        .btn-pay:hover { background-color: #f8f9fa; }
+        #responseMsg { margin-top: 15px; text-align: center; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+    <!-- Video ya Background -->
+    <video id="bgVideo" autoplay muted playsinline>
+        <source src="https://www.image2url.com/r2/default/videos/1786461620011-1fc5c899-dd0f-4545-9779-ecd1d48e08b6.mp4" type="video/mp4">
+        Browser yako haisomi video hii.
+    </video>
+
+    <!-- Bango Jekundu la Malipo -->
+    <div class="payment-overlay" id="paymentOverlay">
+        <div class="payment-box">
+            <h2>Lipia Huduma</h2>
+            
+            <!-- Bei inasomwa kutoka admin/database -->
+            <div class="price-tag" id="displayPrice">Inapakia bei...</div>
+            
+            <!-- Maelezo uliyoweka kule admin -->
+            <div class="description-box" id="displayDesc">Inapakia maelezo...</div>
+
+            <div class="form-group">
+                <label for="phone">Namba ya Simu:</label>
+                <input type="text" id="phone" placeholder="Mfano: 0712345678">
+            </div>
+
+            <div class="form-group">
+                <label for="network">Chagua Mtandao:</label>
+                <select id="network">
+                    <option value="Voda">Vodacom (M-Pesa)</option>
+                    <option value="Airtel">Airtel Money</option>
+                    <option value="Tigo">Tigo Pesa</option>
+                </select>
+            </div>
+
+            <button class="btn-pay" onclick="makePayment()">Lipia Sasa</button>
+            <p id="responseMsg"></p>
+        </div>
+    </div>
+
+    <script>
+        const video = document.getElementById('bgVideo');
+        const paymentOverlay = document.getElementById('paymentOverlay');
+
+        // Kazi ya kufungua bango la malipo
+        function openPayment() {
+            video.pause(); // Simamisha video
+            video.style.display = 'none'; // Ficha video
+            paymentOverlay.style.display = 'flex'; // Onyesha bango jekundu
+            fetchPriceAndDesc(); // Vuta bei na maelezo kutoka database
+        }
+
+        // 1. Mtu akigusa skrini (popote kwenye video)
+        video.addEventListener('click', function() {
+            openPayment();
+        });
+
+        // 2. Video ikimaliza kucheza yenyewe
+        video.addEventListener('ended', function() {
+            openPayment();
+        });
+
+        // Kuchukua bei na maelezo kupitia API ya Server
+        async function fetchPriceAndDesc() {
+            try {
+                const res = await fetch('/api/price');
+                const data = await res.json();
+                if (data.success && data.amount > 0) {
+                    document.getElementById('displayPrice').textContent = `TZS ${data.amount}`;
+                    document.getElementById('displayDesc').textContent = data.description || 'Hakuna maelezo ya ziada yaliyowekwa.';
+                } else {
+                    document.getElementById('displayPrice').textContent = 'Huduma haijapangiwa bei kwa sasa';
+                    document.getElementById('displayDesc').textContent = 'Tafadhali subiri bei iwekwe.';
+                }
+            } catch (e) {
+                document.getElementById('displayPrice').textContent = 'Imeshindwa kupakia bei';
+            }
+        }
+
+        // Kitendo cha kutuma ombi la malipo kwenda server
+        async function makePayment() {
+            const phone = document.getElementById('phone').value;
+            const network = document.getElementById('network').value;
+            const msg = document.getElementById('responseMsg');
+
+            if (!phone) {
+                msg.style.color = '#ffeb3b';
+                msg.textContent = 'Tafadhali jaza namba ya simu!';
+                return;
+            }
+
+            msg.style.color = '#ffffff';
+            msg.textContent = 'Inatuma ombi la malipo kwenye simu yako...';
+
+            try {
+                const response = await fetch('/api/pay', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ phone, network })
+                });
+                const result = await response.json();
+
+                if (result.success || result.order_id) {
+                    msg.style.color = '#d4edda';
+                    msg.textContent = 'Tafadhali angalia simu yako uingize PIN ya malipo!';
+                } else {
+                    msg.style.color = '#ffc107';
+                    msg.textContent = result.error || 'Imeshindwa kutuma ombi la malipo.';
+                }
+            } catch (error) {
+                msg.style.color = '#ffc107';
+                msg.textContent = 'Hitilafu ya mtandao.';
+            }
+        }
+    </script>
+</body>
+</html>
+
