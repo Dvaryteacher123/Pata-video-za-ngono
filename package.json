@@ -1,0 +1,15 @@
+{
+  "name": "pata-link-za-magroup",
+  "version": "1.0.0",
+  "description": "Video payment gateway",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.19.2",
+    "firebase-admin": "^12.0.0",
+    "node-fetch": "^2.7.0"
+  }
+}
+
