@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="sw">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Matengenezo ya Server</title>
+    <style>
+        /* RESET */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(145deg, #0b0e1a 0%, #1a1f2f 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            padding: 20px;
+        }
+
+        .maintenance-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.10);
+            border-radius: 60px 60px 40px 40px;
+            padding: 50px 40px 40px 40px;
+            max-width: 700px;
+            width: 100%;
+            text-align: center;
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.7), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+            transition: transform 0.2s;
+        }
+
+        /* SPINNING COG / ICON */
+        .spinner-wrapper {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+
+        .spinner {
+            width: 90px;
+            height: 90px;
+            background: rgba(255, 215, 0, 0.12);
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border: 2px dashed #f5c842;
+            animation: spin 4s linear infinite;
+            box-shadow: 0 0 30px rgba(245, 200, 66, 0.15);
+        }
+
+        .spinner i {
+            font-size: 48px;
+            color: #f5c842;
+            text-shadow: 0 0 20px rgba(245, 200, 66, 0.3);
+        }
+
+        @keyframes spin {
+            0%   { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* TITLE */
+        h1 {
+            color: #ffffff;
+            font-size: 2.6rem;
+            font-weight: 700;
+            letter-spacing: 1px;
+            margin-bottom: 12px;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.5);
+        }
+
+        h1 span {
+            color: #f5c842;
+        }
+
+        /* SUBTEXT */
+        .sub-message {
+            color: #b9c4e0;
+            font-size: 1.2rem;
+            font-weight: 300;
+            margin-bottom: 8px;
+            letter-spacing: 0.3px;
+        }
+
+        .maintenance-status {
+            display: inline-block;
+            background: rgba(245, 200, 66, 0.12);
+            padding: 6px 24px;
+            border-radius: 40px;
+            border: 1px solid rgba(245, 200, 66, 0.25);
+            color: #f5c842;
+            font-weight: 500;
+            font-size: 0.95rem;
+            margin-top: 4px;
+            margin-bottom: 25px;
+            letter-spacing: 1px;
+            backdrop-filter: blur(4px);
+        }
+
+        /* DIVIDER */
+        .divider {
+            width: 70px;
+            height: 3px;
+            background: linear-gradient(90deg, transparent, #f5c842, transparent);
+            margin: 18px auto 22px auto;
+            border-radius: 10px;
+        }
+
+        /* MESSAGE */
+        .message-box {
+            background: rgba(0, 0, 0, 0.25);
+            border-radius: 30px;
+            padding: 20px 25px;
+            margin-bottom: 30px;
+            border-left: 4px solid #f5c842;
+            border-right: 4px solid #f5c842;
+        }
+
+        .message-box p {
+            color: #d6def0;
+            font-size: 1.1rem;
+            line-height: 1.6;
+            font-weight: 300;
+        }
+
+        .message-box strong {
+            color: #ffffff;
+            font-weight: 600;
+        }
+
+        /* CONTACT - MANYAMA */
+        .contact-section {
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 60px;
+            padding: 18px 20px;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            display: inline-block;
+            backdrop-filter: blur(4px);
+            margin-top: 5px;
+        }
+
+        .contact-section .label {
+            color: #8f9bc0;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            font-weight: 400;
+            display: block;
+            margin-bottom: 4px;
+        }
+
+        .contact-section .name {
+            color: #f5c842;
+            font-size: 1.8rem;
+            font-weight: 700;
+            letter-spacing: 2px;
+            text-shadow: 0 0 20px rgba(245, 200, 66, 0.15);
+        }
+
+        .contact-section .sub-info {
+            color: #a0adcf;
+            font-size: 0.9rem;
+            margin-top: 4px;
+            font-weight: 300;
+        }
+
+        .contact-section .sub-info i {
+            font-style: normal;
+            background: rgba(245, 200, 66, 0.08);
+            padding: 2px 12px;
+            border-radius: 40px;
+            border: 1px solid rgba(245, 200, 66, 0.10);
+        }
+
+        /* FOOTER */
+        .footer-note {
+            margin-top: 30px;
+            color: #4f5a7a;
+            font-size: 0.8rem;
+            letter-spacing: 0.5px;
+            border-top: 1px solid rgba(255,255,255,0.03);
+            padding-top: 20px;
+        }
+
+        /* RESPONSIVE */
+        @media (max-width: 500px) {
+            .maintenance-card {
+                padding: 30px 20px 30px 20px;
+                border-radius: 40px;
+            }
+            h1 {
+                font-size: 2.0rem;
+            }
+            .spinner {
+                width: 70px;
+                height: 70px;
+            }
+            .spinner i {
+                font-size: 36px;
+            }
+            .contact-section .name {
+                font-size: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="maintenance-card">
+
+        <!-- SPINNING ELEMENT -->
+        <div class="spinner-wrapper">
+            <div class="spinner">
+                <!-- Simple gear / settings icon (unicode) -->
+                <i>⚙️</i>
+            </div>
+        </div>
+
+        <!-- TITLE -->
+        <h1>Server <span>Maintenance</span></h1>
+
+        <div class="sub-message">Tunafanya malekebisho</div>
+        <div class="maintenance-status">⏳ Inaendelea</div>
+
+        <div class="divider"></div>
+
+        <!-- MALEKEBISHO MESSAGE -->
+        <div class="message-box">
+            <p>
+                <strong>🔧 Malekebisho yanaendelea</strong> – tunaboresha mfumo ili kukuhudumia
+                vizuri zaidi. Tafadhali subiri kidogo, tutarudi haraka iwezekanavyo.
+                <br /><br />
+                <span style="color:#b9c4e0; font-size:0.95rem;">
+                    ⏱️ Inakadiriwa kumaliza ndani ya <strong style="color:#fff;">dakika 15</strong>
+                </span>
+            </p>
+        </div>
+
+        <!-- CONTACT BY MANYAMA (inazunguka) -->
+        <div class="contact-section">
+            <span class="label">📞 Wasiliana nasi</span>
+            <div class="name">MANYAMA</div>
+            <div class="sub-info">
+                <i>📧 manyama@server.com</i> &nbsp;|&nbsp; <i>📱 +255 712 345 678</i>
+            </div>
+            <div style="margin-top:6px; font-size:0.75rem; color:#5d6a8f;">
+                * support 24/7
+            </div>
+        </div>
+
+        <div class="footer-note">
+            © 2026 • Tunaheshimu subira yako
+        </div>
+    </div>
+
+    <!-- Optional tiny script just to show "inazunguka" effect on contact too (additional spin) -->
+    <script>
+        (function() {
+            // This makes the contact section subtly "pulse" / rotate color
+            // But the main spin is already in CSS. 
+            // We add a tiny extra effect to emphasize "inazunguka"
+            const contact = document.querySelector('.contact-section');
+            let angle = 0;
+            setInterval(() => {
+                angle = (angle + 0.5) % 360;
+                // tiny rotation on the border glow (just for fun)
+                contact.style.transition = 'box-shadow 0.1s';
+                const rad = angle * Math.PI / 180;
+                const r = Math.sin(rad) * 6 + 8;
+                const g = Math.cos(rad) * 4 + 10;
+                const b = Math.sin(rad + 1) * 8 + 20;
+                contact.style.boxShadow = `0 0 ${r+6}px rgba(245,200,66,${0.05+Math.sin(rad)*0.04+0.06})`;
+            }, 150);
+        })();
+    </script>
+
+</body>
+</html>
